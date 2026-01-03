@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin | Pequeños Sueños</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<div class="admin-container">
+  <h1>🧸 Panel Administrador</h1>
+
+  <div class="form">
+    <input id="pass" type="password" placeholder="Contraseña admin">
+
+    <input id="nombre" placeholder="Nombre del producto">
+    <input id="precio" type="number" placeholder="Precio">
+    <input id="categoria" placeholder="Categoría">
+    <input id="imagen" placeholder="URL de imagen">
+    <textarea id="descripcion" placeholder="Descripción del producto"></textarea>
+
+    <button onclick="agregar()">➕ Agregar producto</button>
+  </div>
+
+  <h2>Productos cargados</h2>
+  <div id="lista" class="productos-admin"></div>
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>
