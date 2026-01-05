@@ -1,31 +1,53 @@
 const express = require("express");
-const fs = require("fs");
 const path = require("path");
+const mongoose = require("mongoose");
 
 const app = express();
 app.use(express.json());
 app.use(express.static("public"));
 
-const DB = path.join(__dirname, "productos.json");
 const ADMIN_PASS = "pequenios123";
 
 /* =======================
-   FUNCIONES AUXILIARES
+   MONGODB CONEXIÓN
 ======================= */
-function leerProductos() {
-  if (!fs.existsSync(DB)) return [];
-  return JSON.parse(fs.readFileSync(DB, "utf8"));
-}
+mongoose
+  .connect(process.env.MONGO_URL)
+  .then(() => console.log("✅ MongoDB conectado"))
+  .catch(err => console.error("❌ Error MongoDB:", err));
 
-function guardarProductos(data) {
-  fs.writeFileSync(DB, JSON.stringify(data, null, 2));
-}
+/* =======================
+   MODELO PRODUCTO
+======================= */
+const ProductoSchema = new mongoose.Schema({
+  nombre: String,
+  precio: Number,
+  categoria: String,
+  imagen: String,
+  descripcion: String
+});
+
+const Producto = mongoose.model("Producto", ProductoSchema);
+
+/* =======================
+   RUTAS HTML (CLAVE)
+======================= */
+// Página pública
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Página admin
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin.html"));
+});
 
 /* =======================
    API PUBLICA
 ======================= */
-app.get("/api/productos", (req, res) => {
-  res.json(leerProductos());
+app.get("/api/productos", async (req, res) => {
+  const productos = await Producto.find();
+  res.json(productos);
 });
 
 /* =======================
@@ -33,17 +55,14 @@ app.get("/api/productos", (req, res) => {
 ======================= */
 
 // ➕ AGREGAR PRODUCTO
-app.post("/api/admin/agregar", (req, res) => {
+app.post("/api/admin/agregar", async (req, res) => {
   const { password, nombre, precio, categoria, imagen, descripcion } = req.body;
 
   if (password !== ADMIN_PASS) {
     return res.status(401).json({ error: "Contraseña incorrecta" });
   }
 
-  const productos = leerProductos();
-
-  productos.push({
-    id: Date.now(),
+  await Producto.create({
     nombre,
     precio,
     categoria: categoria || "sin categoría",
@@ -51,55 +70,47 @@ app.post("/api/admin/agregar", (req, res) => {
     descripcion
   });
 
-  guardarProductos(productos);
   res.json({ ok: true });
 });
 
 // ✏️ EDITAR PRODUCTO
-app.post("/api/admin/editar", (req, res) => {
+app.post("/api/admin/editar", async (req, res) => {
   const { password, id, nombre, precio, categoria, imagen, descripcion } = req.body;
 
   if (password !== ADMIN_PASS) {
     return res.status(401).json({ error: "Contraseña incorrecta" });
   }
 
-  const productos = leerProductos();
-  const producto = productos.find(p => p.id === Number(id));
+  await Producto.findByIdAndUpdate(id, {
+    nombre,
+    precio,
+    categoria,
+    imagen,
+    descripcion
+  });
 
-  if (!producto) {
-    return res.status(404).json({ error: "Producto no encontrado" });
-  }
-
-  producto.nombre = nombre;
-  producto.precio = precio;
-  producto.categoria = categoria || "sin categoría";
-  producto.imagen = imagen;
-  producto.descripcion = descripcion;
-
-  guardarProductos(productos);
   res.json({ ok: true });
 });
 
 // 🗑 ELIMINAR PRODUCTO
-app.post("/api/admin/eliminar", (req, res) => {
+app.post("/api/admin/eliminar", async (req, res) => {
   const { password, id } = req.body;
 
   if (password !== ADMIN_PASS) {
     return res.status(401).json({ error: "Contraseña incorrecta" });
   }
 
-  let productos = leerProductos();
-  productos = productos.filter(p => p.id !== Number(id));
-
-  guardarProductos(productos);
+  await Producto.findByIdAndDelete(id);
   res.json({ ok: true });
 });
 
 /* =======================
-   SERVER
+   SERVER (Render compatible)
 ======================= */
-app.listen(3000, () => {
-  console.log("Servidor activo en http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("Servidor activo:");
+  console.log(`🌐 Página pública: http://localhost:${PORT}/`);
+  console.log(`🛠 Admin: http://localhost:${PORT}/admin`);
 });
-
-
