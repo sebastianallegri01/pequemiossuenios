@@ -1,144 +1,26 @@
-/* ===============================
-   ESTILOS GENERALES
-================================ */
 body {
   margin: 0;
-  font-family: "Segoe UI", sans-serif;
-  background: #f6fffd;
-  color: #444;
+  font-family: Arial, sans-serif;
 }
 
-/* ===============================
-   HEADER CON IMAGEN Y TEXTO CENTRADO
-================================ */
-header {
-  background: url('img/pequeniossuenios.jpeg') center/cover no-repeat;
-  color: white;
-  text-align: center;
-  height: 250px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  padding: 0 20px;
-}
-
-/* Capa verde semi-transparente sobre la imagen */
-header::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(50, 64, 63, 0.6); /* verde semi-transparente */
-  z-index: 0;
-}
-
-header h1, header p {
-  position: relative;
-  z-index: 1; /* texto sobre la capa */
-  margin: 5px 0;
-}
-
-/* ===============================
-   MAIN
-================================ */
-main {
-  max-width: 900px;
-  margin: auto;
-  padding: 20px;
-}
-
-/* ===============================
-   PRODUCTOS
-================================ */
-#productos {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
-  gap: 20px;
-}
-
-.producto {
-  background: white;
-  border-radius: 12px;
+.header {
+  background: #f5c6d6;
   padding: 15px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  transition: transform 0.2s, box-shadow 0.2s; /* animación suave */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.producto:hover {
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-}
-
-.producto h3 {
-  margin-top: 0;
-}
-
-/* ===============================
-   BOTONES UNIFORMES
-================================ */
-button {
-  background: #6fdad2;
+.carrito-btn {
+  background: white;
   border: none;
-  color: white;
-  padding: 8px;
-  border-radius: 6px;
+  padding: 8px 12px;
+  border-radius: 20px;
   cursor: pointer;
-  width: 100%;
   font-size: 16px;
-  transition: 0.2s;
 }
 
-button:hover {
-  background: #3cb8ae;
-}
-
-/* ===============================
-   CARRITO
-================================ */
-#carrito {
-  list-style: none;
-  padding: 0;
-}
-
-#carrito li {
-  border-bottom: 1px solid #ddd;
-  padding: 5px 0;
-}
-/* ===============================
-   FOOTER
-================================ */
-footer {
-  background: #6fdad2;
-  color: white;
-  margin-top: 40px;
-}
-
-.footer-contenido {
-  max-width: 900px;
-  margin: auto;
-  padding: 20px;
-  text-align: center;
-}
-
-.footer-contenido p {
-  margin: 8px 0;
-  font-size: 15px;
-}
-
-.footer-contenido a {
-  color: white;
-  text-decoration: underline;
-  font-weight: bold;
-}
-
-.footer-contenido a:hover {
-  color: #e0fffc;
-}
-.shake {
+.carrito-btn.shake {
   animation: shake 0.3s;
 }
 
@@ -148,3 +30,78 @@ footer {
   100% { transform: scale(1); }
 }
 
+#productos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  padding: 20px;
+}
+
+.producto {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+}
+
+.producto img {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.cantidad {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+#overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  z-index: 9;
+}
+
+#overlay.activo {
+  display: block;
+}
+
+#carritoPanel {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 320px;
+  height: 100%;
+  background: white;
+  padding: 20px;
+  transition: right 0.3s;
+  z-index: 10;
+}
+
+#carritoPanel.abierto {
+  right: 0;
+}
+
+.cerrar-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.carrito-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.finalizar-btn {
+  width: 100%;
+  padding: 10px;
+  background: #f5c6d6;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}

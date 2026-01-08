@@ -12,6 +12,7 @@
     <h1>🧸 Pequeños Sueños</h1>
     <p>Ropa y accesorios para bebés y niños</p>
   </div>
+
   <button class="carrito-btn" onclick="abrirCarrito()">
     🛒 <span id="contadorCarrito">0</span>
   </button>
@@ -22,9 +23,12 @@
   <div id="productos"></div>
 </main>
 
-<!-- ===== CARRITO LATERAL ===== -->
+<!-- OVERLAY -->
+<div id="overlay" onclick="cerrarCarrito()"></div>
+
+<!-- CARRITO -->
 <div id="carritoPanel">
-  <button id="cerrarCarrito" onclick="cerrarCarrito()">Cerrar 🛒</button>
+  <button class="cerrar-btn" onclick="cerrarCarrito()">✖</button>
   <h2>Tu carrito</h2>
 
   <div id="carritoItems"></div>
@@ -52,3 +56,4 @@
 <script src="script.js"></script>
 </body>
 </html>
+ 
