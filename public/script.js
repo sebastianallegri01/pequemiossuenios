@@ -1,6 +1,7 @@
 let productos = [];
 let carrito = {};
 
+// Cargar productos
 fetch("/api/productos")
   .then(res => res.json())
   .then(data => {
@@ -8,6 +9,7 @@ fetch("/api/productos")
     mostrarProductos(productos);
   });
 
+// Mostrar productos
 function mostrarProductos(lista) {
   const contenedor = document.getElementById("productos");
   contenedor.innerHTML = "";
@@ -20,24 +22,30 @@ function mostrarProductos(lista) {
       <h3>${p.nombre}</h3>
       <p>${p.descripcion || ""}</p>
       <p><strong>$${p.precio}</strong></p>
-      <button onclick="agregar(${p.id})">Agregar</button>
+      <button onclick="agregar('${p._id}')">Agregar</button>
     `;
     contenedor.appendChild(div);
   });
 }
 
+// Agregar al carrito
 function agregar(id) {
   carrito[id] = (carrito[id] || 0) + 1;
   actualizarCarrito();
 }
 
+// Actualizar carrito
 function actualizarCarrito() {
   const ul = document.getElementById("carrito");
   ul.innerHTML = "";
   let total = 0;
 
   Object.keys(carrito).forEach(id => {
-    const p = productos.find(prod => prod.id == id);
+    const p = productos.find(prod => prod._id === id);
+
+    // 🔒 protección clave
+    if (!p) return;
+
     const cant = carrito[id];
     total += p.precio * cant;
 
@@ -49,6 +57,7 @@ function actualizarCarrito() {
   document.getElementById("total").textContent = total;
 }
 
+// Finalizar compra
 function finalizarCompra() {
   if (Object.keys(carrito).length === 0) {
     alert("El carrito está vacío");
@@ -59,7 +68,11 @@ function finalizarCompra() {
   let total = 0;
 
   Object.keys(carrito).forEach(id => {
-    const p = productos.find(prod => prod.id == id);
+    const p = productos.find(prod => prod._id === id);
+
+    // 🔒 protección clave
+    if (!p) return;
+
     const cant = carrito[id];
     mensaje += `- ${p.nombre} x${cant}%0A`;
     total += p.precio * cant;
