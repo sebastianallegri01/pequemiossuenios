@@ -1,143 +1,63 @@
 let productos = [];
-let carrito = JSON.parse(localStorage.getItem("carrito")) || {};
+let carrito = {};
 
-// ===============================
-// GUARDAR CARRITO
-// ===============================
-function guardarCarrito() {
-  localStorage.setItem("carrito", JSON.stringify(carrito));
-}
-
-// ===============================
-// CARGAR PRODUCTOS
-// ===============================
+// Cargar productos
 fetch("/api/productos")
   .then(res => res.json())
   .then(data => {
     productos = data;
     mostrarProductos(productos);
-    actualizarCarrito();
   });
 
-// ===============================
-// MOSTRAR PRODUCTOS
-// ===============================
+// Mostrar productos
 function mostrarProductos(lista) {
   const contenedor = document.getElementById("productos");
   contenedor.innerHTML = "";
 
   lista.forEach(p => {
-    const cantidad = carrito[p._id]?.cantidad || 0;
-
     const div = document.createElement("div");
     div.className = "producto";
     div.innerHTML = `
-      ${p.imagen ? `<img src="${p.imagen}">` : ""}
+      ${p.imagen ? `<img src="${p.imagen}" style="width:100%;border-radius:10px">` : ""}
       <h3>${p.nombre}</h3>
       <p>${p.descripcion || ""}</p>
       <p><strong>$${p.precio}</strong></p>
-
-      <div class="cantidad">
-        <button onclick="restarProducto('${p._id}')">−</button>
-        <span id="cant-${p._id}">${cantidad}</span>
-        <button onclick="agregarAlCarrito('${p._id}')">+</button>
-      </div>
+      <button onclick="agregar('${p._id}')">Agregar</button>
     `;
     contenedor.appendChild(div);
   });
 }
 
-// ===============================
-// AGREGAR
-// ===============================
-function agregarAlCarrito(id) {
-  if (carrito[id]) {
-    carrito[id].cantidad++;
-  } else {
-    const producto = productos.find(p => p._id === id);
-    if (!producto) return;
-    carrito[id] = { ...producto, cantidad: 1 };
-  }
-
-  guardarCarrito();
-  actualizarCarrito();
-  animarCarrito();
-}
-
-// ===============================
-// RESTAR
-// ===============================
-function restarProducto(id) {
-  if (!carrito[id]) return;
-
-  carrito[id].cantidad--;
-  if (carrito[id].cantidad <= 0) {
-    delete carrito[id];
-  }
-
-  guardarCarrito();
+// Agregar al carrito
+function agregar(id) {
+  carrito[id] = (carrito[id] || 0) + 1;
   actualizarCarrito();
 }
 
-// ===============================
-// ACTUALIZAR CARRITO
-// ===============================
+// Actualizar carrito
 function actualizarCarrito() {
-  const cont = document.getElementById("carritoItems");
-  cont.innerHTML = "";
+  const ul = document.getElementById("carrito");
+  ul.innerHTML = "";
   let total = 0;
-  let totalItems = 0;
 
-  Object.values(carrito).forEach(item => {
-    total += item.precio * item.cantidad;
-    totalItems += item.cantidad;
+  Object.keys(carrito).forEach(id => {
+    const p = productos.find(prod => prod._id === id);
 
-    const div = document.createElement("div");
-    div.className = "carrito-item";
-    div.innerHTML = `
-      <span>${item.nombre} x${item.cantidad}</span>
-      <div>
-        <button onclick="restarProducto('${item._id}')">−</button>
-        <button onclick="agregarAlCarrito('${item._id}')">+</button>
-      </div>
-    `;
-    cont.appendChild(div);
+    // 🔒 protección clave
+    if (!p) return;
+
+    const cant = carrito[id];
+    total += p.precio * cant;
+
+    const li = document.createElement("li");
+    li.textContent = `${p.nombre} x${cant} - $${p.precio * cant}`;
+    ul.appendChild(li);
   });
 
-  document.getElementById("totalCarrito").textContent = "Total: $" + total;
-  document.getElementById("contadorCarrito").textContent = totalItems;
-
-  productos.forEach(p => {
-    const span = document.getElementById(`cant-${p._id}`);
-    if (span) span.textContent = carrito[p._id]?.cantidad || 0;
-  });
+  document.getElementById("total").textContent = total;
 }
 
-// ===============================
-// ABRIR / CERRAR
-// ===============================
-function abrirCarrito() {
-  document.getElementById("carritoPanel").classList.add("abierto");
-  document.getElementById("overlay").classList.add("activo");
-}
-
-function cerrarCarrito() {
-  document.getElementById("carritoPanel").classList.remove("abierto");
-  document.getElementById("overlay").classList.remove("activo");
-}
-
-// ===============================
-// ANIMACIÓN
-// ===============================
-function animarCarrito() {
-  const btn = document.querySelector(".carrito-btn");
-  btn.classList.add("shake");
-  setTimeout(() => btn.classList.remove("shake"), 300);
-}
-
-// ===============================
-// FINALIZAR COMPRA
-// ===============================
+// Finalizar compra
 function finalizarCompra() {
   if (Object.keys(carrito).length === 0) {
     alert("El carrito está vacío");
@@ -147,9 +67,15 @@ function finalizarCompra() {
   let mensaje = "Hola Cintia! Mi pedido de Pequeños Sueños es:%0A";
   let total = 0;
 
-  Object.values(carrito).forEach(item => {
-    mensaje += `- ${item.nombre} x${item.cantidad}%0A`;
-    total += item.precio * item.cantidad;
+  Object.keys(carrito).forEach(id => {
+    const p = productos.find(prod => prod._id === id);
+
+    // 🔒 protección clave
+    if (!p) return;
+
+    const cant = carrito[id];
+    mensaje += `- ${p.nombre} x${cant}%0A`;
+    total += p.precio * cant;
   });
 
   mensaje += `%0ATotal: $${total}`;

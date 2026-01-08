@@ -1,46 +1,22 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Pequeños Sueños</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-<header class="header">
-  <div>
-    <h1>🧸 Pequeños Sueños</h1>
-    <p>Ropa y accesorios para bebés y niños</p>
-  </div>
-
-  <button class="carrito-btn" onclick="abrirCarrito()">
-    🛒 <span id="contadorCarrito">0</span>
-  </button>
-</header>
-
-<main>
-  <h2>Productos</h2>
-  <div id="productos"></div>
-</main>
-
-<!-- OVERLAY -->
-<div id="overlay" onclick="cerrarCarrito()"></div>
-
-<!-- CARRITO -->
-<div id="carritoPanel">
-  <button class="cerrar-btn" onclick="cerrarCarrito()">✖</button>
-  <h2>Tu carrito</h2>
-
-  <div id="carritoItems"></div>
-
-  <p id="totalCarrito"><strong>Total:</strong> $0</p>
-
-  <button onclick="finalizarCompra()" class="finalizar-btn">
-    Finalizar compra
-  </button>
-</div>
-
-<footer>
+<!DOCTYPE html> 
+<html lang="es"> 
+<head> 
+  <meta charset="UTF-8"> 
+  <title>Pequeños Sueños</title> 
+  <link rel="stylesheet" href="style.css"> </head> 
+  <body> 
+    
+    <header> 
+      <h1>🧸 Pequeños Sueños</h1> 
+      <p>Ropa y accesorios para bebés y niños</p> </header> 
+      <main> <h2>Productos</h2> 
+        <div id="productos"></div> 
+        <h2>🛒 Carrito</h2> 
+        <ul id="carrito"></ul> 
+        <p><strong>Total:</strong> $<span id="total">0</span></p> 
+        <button onclick="finalizarCompra()">Finalizar compra</button> 
+      </main> <script src="script.js"></script> 
+      <footer>
   <div class="footer-contenido">
     <p>📍 Dirección: Beltrán 5986</p>
     <p>
@@ -53,7 +29,5 @@
   </div>
 </footer>
 
-<script src="script.js"></script>
-</body>
-</html>
- 
+    </body>
+    </html>
