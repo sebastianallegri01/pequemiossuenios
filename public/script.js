@@ -1,7 +1,9 @@
 let productos = [];
 let carrito = {};
 
-// Cargar productos
+// ===============================
+// CARGAR PRODUCTOS DESDE MONGO
+// ===============================
 fetch("/api/productos")
   .then(res => res.json())
   .then(data => {
@@ -9,7 +11,9 @@ fetch("/api/productos")
     mostrarProductos(productos);
   });
 
-// Mostrar productos
+// ===============================
+// MOSTRAR PRODUCTOS
+// ===============================
 function mostrarProductos(lista) {
   const contenedor = document.getElementById("productos");
   contenedor.innerHTML = "";
@@ -22,42 +26,78 @@ function mostrarProductos(lista) {
       <h3>${p.nombre}</h3>
       <p>${p.descripcion || ""}</p>
       <p><strong>$${p.precio}</strong></p>
-      <button onclick="agregar('${p._id}')">Agregar</button>
+      <button onclick="agregarAlCarrito('${p._id}')">Agregar</button>
     `;
     contenedor.appendChild(div);
   });
 }
 
-// Agregar al carrito
-function agregar(id) {
-  carrito[id] = (carrito[id] || 0) + 1;
+// ===============================
+// AGREGAR AL CARRITO
+// ===============================
+function agregarAlCarrito(id) {
+  if (carrito[id]) {
+    carrito[id].cantidad += 1;
+  } else {
+    const producto = productos.find(p => p._id === id);
+    if (!producto) return;
+
+    carrito[id] = {
+      ...producto,
+      cantidad: 1
+    };
+  }
+
   actualizarCarrito();
 }
 
-// Actualizar carrito
-function actualizarCarrito() {
-  const ul = document.getElementById("carrito");
-  ul.innerHTML = "";
-  let total = 0;
-
-  Object.keys(carrito).forEach(id => {
-    const p = productos.find(prod => prod._id === id);
-
-    // 🔒 protección clave
-    if (!p) return;
-
-    const cant = carrito[id];
-    total += p.precio * cant;
-
-    const li = document.createElement("li");
-    li.textContent = `${p.nombre} x${cant} - $${p.precio * cant}`;
-    ul.appendChild(li);
-  });
-
-  document.getElementById("total").textContent = total;
+// ===============================
+// ELIMINAR PRODUCTO
+// ===============================
+function eliminarDelCarrito(id) {
+  delete carrito[id];
+  actualizarCarrito();
 }
 
-// Finalizar compra
+// ===============================
+// ACTUALIZAR CARRITO LATERAL
+// ===============================
+function actualizarCarrito() {
+  const container = document.getElementById("carritoItems");
+  container.innerHTML = "";
+
+  let total = 0;
+
+  Object.values(carrito).forEach(item => {
+    total += item.precio * item.cantidad;
+
+    const div = document.createElement("div");
+    div.className = "carrito-item";
+    div.innerHTML = `
+      <p>${item.nombre} x${item.cantidad} - $${item.precio * item.cantidad}</p>
+      <button onclick="eliminarDelCarrito('${item._id}')">Eliminar</button>
+    `;
+    container.appendChild(div);
+  });
+
+  document.getElementById("totalCarrito").textContent = "Total: $" + total;
+  document.getElementById("contadorCarrito").textContent = Object.keys(carrito).length;
+}
+
+// ===============================
+// ABRIR / CERRAR CARRITO
+// ===============================
+function abrirCarrito() {
+  document.getElementById("carritoPanel").style.right = "0";
+}
+
+function cerrarCarrito() {
+  document.getElementById("carritoPanel").style.right = "-500px";
+}
+
+// ===============================
+// FINALIZAR COMPRA (WHATSAPP)
+// ===============================
 function finalizarCompra() {
   if (Object.keys(carrito).length === 0) {
     alert("El carrito está vacío");
@@ -67,15 +107,9 @@ function finalizarCompra() {
   let mensaje = "Hola Cintia! Mi pedido de Pequeños Sueños es:%0A";
   let total = 0;
 
-  Object.keys(carrito).forEach(id => {
-    const p = productos.find(prod => prod._id === id);
-
-    // 🔒 protección clave
-    if (!p) return;
-
-    const cant = carrito[id];
-    mensaje += `- ${p.nombre} x${cant}%0A`;
-    total += p.precio * cant;
+  Object.values(carrito).forEach(item => {
+    mensaje += `- ${item.nombre} x${item.cantidad} - $${item.precio * item.cantidad}%0A`;
+    total += item.precio * item.cantidad;
   });
 
   mensaje += `%0ATotal: $${total}`;
