@@ -8,11 +8,15 @@ const lista = document.getElementById("lista");
 
 let editandoId = null;
 
+/* =====================
+   CARGAR PRODUCTOS
+===================== */
 function cargar() {
   fetch("/api/productos")
     .then(r => r.json())
     .then(data => {
       lista.innerHTML = "";
+
       data.forEach(p => {
         lista.innerHTML += `
           <div class="card">
@@ -21,8 +25,9 @@ function cargar() {
               <h3>${p.nombre}</h3>
               <div class="precio">$${p.precio}</div>
               <p>${p.descripcion || ""}</p>
-              <button onclick="editar(${p.id})">✏️ Editar</button>
-              <button onclick="borrar(${p.id})">🗑 Eliminar</button>
+
+              <button onclick="editar('${p._id}')">✏️ Editar</button>
+              <button onclick="borrar('${p._id}')">🗑 Eliminar</button>
             </div>
           </div>
         `;
@@ -30,12 +35,14 @@ function cargar() {
     });
 }
 
+/* =====================
+   EDITAR
+===================== */
 function editar(id) {
-  id = Number(id); // ✅ convertir a número
   fetch("/api/productos")
     .then(r => r.json())
     .then(data => {
-      const p = data.find(x => x.id === id); // comparación estricta
+      const p = data.find(x => x._id === id);
       if (!p) return alert("Producto no encontrado");
 
       editandoId = id;
@@ -48,6 +55,9 @@ function editar(id) {
     });
 }
 
+/* =====================
+   AGREGAR / EDITAR
+===================== */
 function agregar() {
   if (!pass.value) return alert("Ingresá la contraseña");
 
@@ -58,7 +68,7 @@ function agregar() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       password: pass.value,
-      id: editandoId ? Number(editandoId) : undefined, // 🔹 convertir a número
+      id: editandoId || undefined,
       nombre: nombre.value,
       precio: Number(precio.value),
       categoria: categoria.value,
@@ -68,23 +78,32 @@ function agregar() {
   })
     .then(res => {
       if (!res.ok) return alert("Contraseña incorrecta");
+
       limpiarFormulario();
       cargar();
     });
 }
 
+/* =====================
+   BORRAR
+===================== */
 function borrar(id) {
-  id = Number(id); // ✅ convertir a número
   fetch("/api/admin/eliminar", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password: pass.value, id })
+    body: JSON.stringify({
+      password: pass.value,
+      id
+    })
   }).then(res => {
     if (!res.ok) return alert("Contraseña incorrecta");
     cargar();
   });
 }
 
+/* =====================
+   LIMPIAR
+===================== */
 function limpiarFormulario() {
   editandoId = null;
   nombre.value = "";
