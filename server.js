@@ -1,7 +1,7 @@
 const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
-const session = require("express-session"); // 👈 Agregado para carrito
+const session = require("express-session");
 
 const app = express();
 app.use(express.json());
@@ -13,10 +13,10 @@ const ADMIN_PASS = "pequenios123";
    SESIONES (Carrito)
 ======================= */
 app.use(session({
-  secret: "carrito_secret_123", // cualquier string
+  secret: "carrito_secret_123",
   resave: false,
   saveUninitialized: true,
-  cookie: { maxAge: 1000 * 60 * 60 } // 1 hora
+  cookie: { maxAge: 1000 * 60 * 60 }
 }));
 
 /* =======================
@@ -41,14 +41,12 @@ const ProductoSchema = new mongoose.Schema({
 const Producto = mongoose.model("Producto", ProductoSchema);
 
 /* =======================
-   RUTAS HTML (CLAVE)
+   RUTAS HTML
 ======================= */
-// Página pública
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Página admin
 app.get("/admin", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin.html"));
 });
@@ -64,8 +62,6 @@ app.get("/api/productos", async (req, res) => {
 /* =======================
    API ADMIN
 ======================= */
-
-// ➕ AGREGAR PRODUCTO
 app.post("/api/admin/agregar", async (req, res) => {
   const { password, nombre, precio, categoria, imagen, descripcion } = req.body;
 
@@ -84,7 +80,6 @@ app.post("/api/admin/agregar", async (req, res) => {
   res.json({ ok: true });
 });
 
-// ✏️ EDITAR PRODUCTO
 app.post("/api/admin/editar", async (req, res) => {
   const { password, id, nombre, precio, categoria, imagen, descripcion } = req.body;
 
@@ -103,7 +98,6 @@ app.post("/api/admin/editar", async (req, res) => {
   res.json({ ok: true });
 });
 
-// 🗑 ELIMINAR PRODUCTO
 app.post("/api/admin/eliminar", async (req, res) => {
   const { password, id } = req.body;
 
@@ -118,14 +112,11 @@ app.post("/api/admin/eliminar", async (req, res) => {
 /* =======================
    API CARRITO
 ======================= */
-
-// 📦 Ver carrito
 app.get("/api/carrito", (req, res) => {
   if (!req.session.carrito) req.session.carrito = [];
   res.json(req.session.carrito);
 });
 
-// ➕ Agregar producto al carrito
 app.post("/api/carrito/agregar", async (req, res) => {
   const { productoId, cantidad } = req.body;
 
@@ -134,7 +125,6 @@ app.post("/api/carrito/agregar", async (req, res) => {
 
   if (!req.session.carrito) req.session.carrito = [];
 
-  // Si ya existe, sumamos cantidad
   const index = req.session.carrito.findIndex(p => p._id === productoId);
   if (index >= 0) {
     req.session.carrito[index].cantidad += cantidad;
@@ -150,23 +140,21 @@ app.post("/api/carrito/agregar", async (req, res) => {
   res.json({ ok: true, carrito: req.session.carrito });
 });
 
-// 🗑 Eliminar producto del carrito
 app.post("/api/carrito/eliminar", (req, res) => {
   const { productoId } = req.body;
 
   if (!req.session.carrito) req.session.carrito = [];
-
   req.session.carrito = req.session.carrito.filter(p => p._id !== productoId);
 
   res.json({ ok: true, carrito: req.session.carrito });
 });
 
 /* =======================
-   SERVER (Render compatible)
+   SERVER (Railway compatible)
 ======================= */
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log("Servidor activo:");
   console.log(`🌐 Página pública: http://localhost:${PORT}/`);
   console.log(`🛠 Admin: http://localhost:${PORT}/admin`);
