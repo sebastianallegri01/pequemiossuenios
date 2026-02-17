@@ -7,6 +7,7 @@ const app = express();
 app.use(express.json());
 app.use(express.static("public"));
 
+// Contraseña de administrador
 const ADMIN_PASS = "pequenios123";
 
 /* =======================
@@ -16,14 +17,20 @@ app.use(session({
   secret: "carrito_secret_123",
   resave: false,
   saveUninitialized: true,
-  cookie: { maxAge: 1000 * 60 * 60 }
+  cookie: { maxAge: 1000 * 60 * 60 } // 1 hora
 }));
 
 /* =======================
    MONGODB CONEXIÓN
 ======================= */
+const mongoUri = process.env.MONGO_URL;
+if (!mongoUri) {
+  console.error("❌ Error: la variable de entorno MONGO_URL no está definida");
+  process.exit(1); // Detiene el servidor si no hay URL
+}
+
 mongoose
-  .connect(process.env.MONGO_URL)
+  .connect(mongoUri)
   .then(() => console.log("✅ MongoDB conectado"))
   .catch(err => console.error("❌ Error MongoDB:", err));
 
@@ -37,7 +44,6 @@ const ProductoSchema = new mongoose.Schema({
   imagen: String,
   descripcion: String
 });
-
 const Producto = mongoose.model("Producto", ProductoSchema);
 
 /* =======================
@@ -65,9 +71,7 @@ app.get("/api/productos", async (req, res) => {
 app.post("/api/admin/agregar", async (req, res) => {
   const { password, nombre, precio, categoria, imagen, descripcion } = req.body;
 
-  if (password !== ADMIN_PASS) {
-    return res.status(401).json({ error: "Contraseña incorrecta" });
-  }
+  if (password !== ADMIN_PASS) return res.status(401).json({ error: "Contraseña incorrecta" });
 
   await Producto.create({
     nombre,
@@ -83,27 +87,16 @@ app.post("/api/admin/agregar", async (req, res) => {
 app.post("/api/admin/editar", async (req, res) => {
   const { password, id, nombre, precio, categoria, imagen, descripcion } = req.body;
 
-  if (password !== ADMIN_PASS) {
-    return res.status(401).json({ error: "Contraseña incorrecta" });
-  }
+  if (password !== ADMIN_PASS) return res.status(401).json({ error: "Contraseña incorrecta" });
 
-  await Producto.findByIdAndUpdate(id, {
-    nombre,
-    precio,
-    categoria,
-    imagen,
-    descripcion
-  });
-
+  await Producto.findByIdAndUpdate(id, { nombre, precio, categoria, imagen, descripcion });
   res.json({ ok: true });
 });
 
 app.post("/api/admin/eliminar", async (req, res) => {
   const { password, id } = req.body;
 
-  if (password !== ADMIN_PASS) {
-    return res.status(401).json({ error: "Contraseña incorrecta" });
-  }
+  if (password !== ADMIN_PASS) return res.status(401).json({ error: "Contraseña incorrecta" });
 
   await Producto.findByIdAndDelete(id);
   res.json({ ok: true });
@@ -155,7 +148,5 @@ app.post("/api/carrito/eliminar", (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log("Servidor activo:");
-  console.log(`🌐 Página pública: http://localhost:${PORT}/`);
-  console.log(`🛠 Admin: http://localhost:${PORT}/admin`);
+  console.log("✅ Servidor activo en Railway");
 });
