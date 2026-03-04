@@ -1,6 +1,5 @@
 const express = require("express");
 const path = require("path");
-const mongoose = require("mongoose");
 const session = require("express-session");
 
 const app = express();
@@ -17,34 +16,13 @@ app.use(session({
   secret: "carrito_secret_123",
   resave: false,
   saveUninitialized: true,
-  cookie: { maxAge: 1000 * 60 * 60 } // 1 hora
+  cookie: { maxAge: 1000 * 60 * 60 }
 }));
 
 /* =======================
-   MONGODB CONEXIÓN
+   BASE DE DATOS (FAKE)
 ======================= */
-const mongoUri = process.env.MONGO_URL;
-if (!mongoUri) {
-  console.error("❌ Error: la variable de entorno MONGO_URL no está definida");
-  process.exit(1); // Detiene el servidor si no hay URL
-}
-
-mongoose
-  .connect(mongoUri)
-  .then(() => console.log("✅ MongoDB conectado"))
-  .catch(err => console.error("❌ Error MongoDB:", err));
-
-/* =======================
-   MODELO PRODUCTO
-======================= */
-const ProductoSchema = new mongoose.Schema({
-  nombre: String,
-  precio: Number,
-  categoria: String,
-  imagen: String,
-  descripcion: String
-});
-const Producto = mongoose.model("Producto", ProductoSchema);
+let productos = [];
 
 /* =======================
    RUTAS HTML
@@ -60,45 +38,57 @@ app.get("/admin", (req, res) => {
 /* =======================
    API PUBLICA
 ======================= */
-app.get("/api/productos", async (req, res) => {
-  const productos = await Producto.find();
+app.get("/api/productos", (req, res) => {
   res.json(productos);
 });
 
 /* =======================
    API ADMIN
 ======================= */
-app.post("/api/admin/agregar", async (req, res) => {
+app.post("/api/admin/agregar", (req, res) => {
   const { password, nombre, precio, categoria, imagen, descripcion } = req.body;
 
-  if (password !== ADMIN_PASS) return res.status(401).json({ error: "Contraseña incorrecta" });
+  if (password !== ADMIN_PASS) {
+    return res.status(401).json({ error: "Contraseña incorrecta" });
+  }
 
-  await Producto.create({
+  const nuevo = {
+    _id: Date.now().toString(),
     nombre,
     precio,
     categoria: categoria || "sin categoría",
     imagen,
     descripcion
-  });
+  };
+
+  productos.push(nuevo);
 
   res.json({ ok: true });
 });
 
-app.post("/api/admin/editar", async (req, res) => {
+app.post("/api/admin/editar", (req, res) => {
   const { password, id, nombre, precio, categoria, imagen, descripcion } = req.body;
 
-  if (password !== ADMIN_PASS) return res.status(401).json({ error: "Contraseña incorrecta" });
+  if (password !== ADMIN_PASS) {
+    return res.status(401).json({ error: "Contraseña incorrecta" });
+  }
 
-  await Producto.findByIdAndUpdate(id, { nombre, precio, categoria, imagen, descripcion });
+  productos = productos.map(p =>
+    p._id === id ? { ...p, nombre, precio, categoria, imagen, descripcion } : p
+  );
+
   res.json({ ok: true });
 });
 
-app.post("/api/admin/eliminar", async (req, res) => {
+app.post("/api/admin/eliminar", (req, res) => {
   const { password, id } = req.body;
 
-  if (password !== ADMIN_PASS) return res.status(401).json({ error: "Contraseña incorrecta" });
+  if (password !== ADMIN_PASS) {
+    return res.status(401).json({ error: "Contraseña incorrecta" });
+  }
 
-  await Producto.findByIdAndDelete(id);
+  productos = productos.filter(p => p._id !== id);
+
   res.json({ ok: true });
 });
 
@@ -110,20 +100,23 @@ app.get("/api/carrito", (req, res) => {
   res.json(req.session.carrito);
 });
 
-app.post("/api/carrito/agregar", async (req, res) => {
+app.post("/api/carrito/agregar", (req, res) => {
   const { productoId, cantidad } = req.body;
 
-  const producto = await Producto.findById(productoId);
-  if (!producto) return res.status(404).json({ error: "Producto no encontrado" });
+  const producto = productos.find(p => p._id === productoId);
+  if (!producto) {
+    return res.status(404).json({ error: "Producto no encontrado" });
+  }
 
   if (!req.session.carrito) req.session.carrito = [];
 
   const index = req.session.carrito.findIndex(p => p._id === productoId);
+
   if (index >= 0) {
     req.session.carrito[index].cantidad += cantidad;
   } else {
     req.session.carrito.push({
-      _id: producto._id.toString(),
+      _id: producto._id,
       nombre: producto.nombre,
       precio: producto.precio,
       cantidad
@@ -137,16 +130,19 @@ app.post("/api/carrito/eliminar", (req, res) => {
   const { productoId } = req.body;
 
   if (!req.session.carrito) req.session.carrito = [];
+
   req.session.carrito = req.session.carrito.filter(p => p._id !== productoId);
 
   res.json({ ok: true, carrito: req.session.carrito });
 });
 
 /* =======================
-   SERVER (Railway compatible)
+   SERVER
 ======================= */
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log("✅ Servidor activo en Railway");
+app.listen(PORT, () => {
+  console.log("✅ Servidor activo");
+  console.log(`🌐 Cliente: http://localhost:${PORT}`);
+  console.log(`🛠 Admin: http://localhost:${PORT}/admin`);
 });
