@@ -4,10 +4,12 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 
 const app = express();
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-// Contraseña de administrador
+// CONTRASEÑA ADMIN
 const ADMIN_PASS = "123";
 
 /* =======================
@@ -17,25 +19,24 @@ app.use(session({
   secret: "carrito_secret_123",
   resave: false,
   saveUninitialized: true,
-  cookie: { maxAge: 1000 * 60 * 60 } // 1 hora
+  cookie: { maxAge: 1000 * 60 * 60 }
 }));
 
 /* =======================
-   MONGODB CONEXIÓN
+   MONGODB
 ======================= */
 const mongoUri = process.env.MONGO_URL;
+
 if (!mongoUri) {
-  console.error("❌ Error: la variable de entorno MONGO_URL no está definida");
-  process.exit(1); // Detiene el servidor si no hay URL
+  console.error("❌ MONGO_URL no está definida");
 }
 
-mongoose
-  .connect(mongoUri)
+mongoose.connect(mongoUri)
   .then(() => console.log("✅ MongoDB conectado"))
-  .catch(err => console.error("❌ Error MongoDB:", err));
+  .catch(err => console.log("❌ Error MongoDB:", err));
 
 /* =======================
-   MODELO PRODUCTO
+   MODELO
 ======================= */
 const ProductoSchema = new mongoose.Schema({
   nombre: String,
@@ -44,10 +45,11 @@ const ProductoSchema = new mongoose.Schema({
   imagen: String,
   descripcion: String
 });
+
 const Producto = mongoose.model("Producto", ProductoSchema);
 
 /* =======================
-   RUTAS HTML
+   HTML
 ======================= */
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
@@ -66,17 +68,47 @@ app.get("/api/productos", async (req, res) => {
 });
 
 /* =======================
-   API ADMIN
+   ADMIN AGREGAR
 ======================= */
 app.post("/api/admin/agregar", async (req, res) => {
+
+  console.log("PASSWORD RECIBIDA:", req.body.password);
+
   const { password, nombre, precio, categoria, imagen, descripcion } = req.body;
 
-  if (password !== ADMIN_PASS) return res.status(401).json({ error: "Contraseña incorrecta" });
+  if (password != ADMIN_PASS) {
+    console.log("❌ contraseña incorrecta");
+    return res.status(401).json({ error: "Contraseña incorrecta" });
+  }
 
   await Producto.create({
     nombre,
     precio,
-    categoria: categoria || "sin categoría",
+    categoria,
+    imagen,
+    descripcion
+  });
+
+  console.log("✅ producto agregado");
+
+  res.json({ ok: true });
+});
+
+/* =======================
+   ADMIN EDITAR
+======================= */
+app.post("/api/admin/editar", async (req, res) => {
+
+  const { password, id, nombre, precio, categoria, imagen, descripcion } = req.body;
+
+  if (password != ADMIN_PASS) {
+    return res.status(401).json({ error: "Contraseña incorrecta" });
+  }
+
+  await Producto.findByIdAndUpdate(id, {
+    nombre,
+    precio,
+    categoria,
     imagen,
     descripcion
   });
@@ -84,69 +116,85 @@ app.post("/api/admin/agregar", async (req, res) => {
   res.json({ ok: true });
 });
 
-app.post("/api/admin/editar", async (req, res) => {
-  const { password, id, nombre, precio, categoria, imagen, descripcion } = req.body;
-
-  if (password !== ADMIN_PASS) return res.status(401).json({ error: "Contraseña incorrecta" });
-
-  await Producto.findByIdAndUpdate(id, { nombre, precio, categoria, imagen, descripcion });
-  res.json({ ok: true });
-});
-
+/* =======================
+   ADMIN BORRAR
+======================= */
 app.post("/api/admin/eliminar", async (req, res) => {
+
   const { password, id } = req.body;
 
-  if (password !== ADMIN_PASS) return res.status(401).json({ error: "Contraseña incorrecta" });
+  if (password != ADMIN_PASS) {
+    return res.status(401).json({ error: "Contraseña incorrecta" });
+  }
 
   await Producto.findByIdAndDelete(id);
+
   res.json({ ok: true });
 });
 
 /* =======================
-   API CARRITO
+   CARRITO
 ======================= */
 app.get("/api/carrito", (req, res) => {
+
   if (!req.session.carrito) req.session.carrito = [];
+
   res.json(req.session.carrito);
 });
 
 app.post("/api/carrito/agregar", async (req, res) => {
+
   const { productoId, cantidad } = req.body;
 
   const producto = await Producto.findById(productoId);
-  if (!producto) return res.status(404).json({ error: "Producto no encontrado" });
+
+  if (!producto) {
+    return res.status(404).json({ error: "Producto no encontrado" });
+  }
 
   if (!req.session.carrito) req.session.carrito = [];
 
   const index = req.session.carrito.findIndex(p => p._id === productoId);
+
   if (index >= 0) {
     req.session.carrito[index].cantidad += cantidad;
   } else {
+
     req.session.carrito.push({
       _id: producto._id.toString(),
       nombre: producto.nombre,
       precio: producto.precio,
       cantidad
     });
+
   }
 
-  res.json({ ok: true, carrito: req.session.carrito });
+  res.json({ ok: true });
 });
 
 app.post("/api/carrito/eliminar", (req, res) => {
+
   const { productoId } = req.body;
 
   if (!req.session.carrito) req.session.carrito = [];
-  req.session.carrito = req.session.carrito.filter(p => p._id !== productoId);
 
-  res.json({ ok: true, carrito: req.session.carrito });
+  req.session.carrito =
+    req.session.carrito.filter(p => p._id !== productoId);
+
+  res.json({ ok: true });
+
 });
 
 /* =======================
-   SERVER (Railway compatible)
+   SERVER
 ======================= */
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log("✅ Servidor activo en Railway");
+
+  console.log("🚀 Servidor activo");
+  console.log("Clientes: /");
+  console.log("Admin: /admin");
+
 });
