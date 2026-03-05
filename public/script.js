@@ -1,13 +1,17 @@
 let productos = [];
 let carrito = {};
 
-// Cargar productos
+// Cargar productos desde el servidor
 fetch("/api/productos")
   .then(res => res.json())
   .then(data => {
     productos = data;
     mostrarProductos(productos);
+  })
+  .catch(err => {
+    console.error("Error cargando productos:", err);
   });
+
 
 // Mostrar productos
 function mostrarProductos(lista) {
@@ -17,6 +21,7 @@ function mostrarProductos(lista) {
   lista.forEach(p => {
     const div = document.createElement("div");
     div.className = "producto";
+
     div.innerHTML = `
       ${p.imagen ? `<img src="${p.imagen}" style="width:100%;border-radius:10px">` : ""}
       <h3>${p.nombre}</h3>
@@ -24,15 +29,18 @@ function mostrarProductos(lista) {
       <p><strong>$${p.precio}</strong></p>
       <button onclick="agregar('${p._id}')">Agregar</button>
     `;
+
     contenedor.appendChild(div);
   });
 }
+
 
 // Agregar al carrito
 function agregar(id) {
   carrito[id] = (carrito[id] || 0) + 1;
   actualizarCarrito();
 }
+
 
 // Actualizar carrito
 function actualizarCarrito() {
@@ -41,9 +49,9 @@ function actualizarCarrito() {
   let total = 0;
 
   Object.keys(carrito).forEach(id => {
+
     const p = productos.find(prod => prod._id === id);
 
-    // 🔒 protección clave
     if (!p) return;
 
     const cant = carrito[id];
@@ -57,24 +65,28 @@ function actualizarCarrito() {
   document.getElementById("total").textContent = total;
 }
 
-// Finalizar compra
+
+// Finalizar compra por WhatsApp
 function finalizarCompra() {
+
   if (Object.keys(carrito).length === 0) {
     alert("El carrito está vacío");
     return;
   }
 
-  let mensaje = "Hola Cintia! Mi pedido de Pequeños Sueños es:%0A";
+  let mensaje = "Hola! Quiero hacer este pedido de Pequeños Sueños:%0A";
   let total = 0;
 
   Object.keys(carrito).forEach(id => {
+
     const p = productos.find(prod => prod._id === id);
 
-    // 🔒 protección clave
     if (!p) return;
 
     const cant = carrito[id];
+
     mensaje += `- ${p.nombre} x${cant}%0A`;
+
     total += p.precio * cant;
   });
 
