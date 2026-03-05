@@ -8,7 +8,7 @@ app.use(express.json());
 app.use(express.static("public"));
 
 // Contraseña de administrador
-const ADMIN_PASS = "pequenios123";
+const ADMIN_PASS = "123";
 
 /* =======================
    SESIONES (Carrito)
