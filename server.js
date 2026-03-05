@@ -76,7 +76,8 @@ app.post("/api/admin/agregar", async (req, res) => {
 
   const { password, nombre, precio, categoria, imagen, descripcion } = req.body;
 
-  if (password != ADMIN_PASS) {
+  if (if (password.trim() !== ADMIN_PASS)
+) {
     console.log("❌ contraseña incorrecta");
     return res.status(401).json({ error: "Contraseña incorrecta" });
   }
@@ -101,7 +102,8 @@ app.post("/api/admin/editar", async (req, res) => {
 
   const { password, id, nombre, precio, categoria, imagen, descripcion } = req.body;
 
-  if (password != ADMIN_PASS) {
+  if (if (password.trim() !== ADMIN_PASS)
+  ) {
     return res.status(401).json({ error: "Contraseña incorrecta" });
   }
 
@@ -123,7 +125,8 @@ app.post("/api/admin/eliminar", async (req, res) => {
 
   const { password, id } = req.body;
 
-  if (password != ADMIN_PASS) {
+  if (if (password.trim() !== ADMIN_PASS)
+) {
     return res.status(401).json({ error: "Contraseña incorrecta" });
   }
 
