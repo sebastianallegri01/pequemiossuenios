@@ -83,7 +83,9 @@ function editar(id) {
 ===================== */
 function agregar() {
 
-  if (!pass.value) {
+  const password = pass.value.trim();
+
+  if (!password) {
     alert("Ingresá la contraseña de administrador");
     return;
   }
@@ -98,7 +100,7 @@ function agregar() {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      password: pass.value,
+      password: password,
       id: editandoId,
       nombre: nombre.value,
       precio: Number(precio.value),
@@ -128,7 +130,9 @@ function agregar() {
 ===================== */
 function borrar(id) {
 
-  if (!pass.value) {
+  const password = pass.value.trim();
+
+  if (!password) {
     alert("Ingresá la contraseña de administrador");
     return;
   }
@@ -141,7 +145,7 @@ function borrar(id) {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      password: pass.value,
+      password: password,
       id: id
     })
   })
