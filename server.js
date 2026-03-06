@@ -32,8 +32,8 @@ if (!mongoUri) {
 }
 
 mongoose.connect(mongoUri)
-  .then(() => console.log("✅ MongoDB conectado"))
-  .catch(err => console.log("❌ Error MongoDB:", err));
+.then(() => console.log("✅ MongoDB conectado"))
+.catch(err => console.log("❌ Error MongoDB:", err));
 
 /* =======================
    MODELO
@@ -72,15 +72,16 @@ app.get("/api/productos", async (req, res) => {
 ======================= */
 app.post("/api/admin/agregar", async (req, res) => {
 
-  console.log("PASSWORD RECIBIDA:", req.body.password);
+  const password = (req.body.password || "").trim();
 
-  const { password, nombre, precio, categoria, imagen, descripcion } = req.body;
+  console.log("PASSWORD RECIBIDA:", password);
 
-  if (password.trim() !== ADMIN_PASS)
- {
+  if (password !== ADMIN_PASS) {
     console.log("❌ contraseña incorrecta");
     return res.status(401).json({ error: "Contraseña incorrecta" });
   }
+
+  const { nombre, precio, categoria, imagen, descripcion } = req.body;
 
   await Producto.create({
     nombre,
@@ -100,12 +101,13 @@ app.post("/api/admin/agregar", async (req, res) => {
 ======================= */
 app.post("/api/admin/editar", async (req, res) => {
 
-  const { password, id, nombre, precio, categoria, imagen, descripcion } = req.body;
+  const password = (req.body.password || "").trim();
 
-  if (password.trim() !== ADMIN_PASS)
-   {
+  if (password !== ADMIN_PASS) {
     return res.status(401).json({ error: "Contraseña incorrecta" });
   }
+
+  const { id, nombre, precio, categoria, imagen, descripcion } = req.body;
 
   await Producto.findByIdAndUpdate(id, {
     nombre,
@@ -123,12 +125,13 @@ app.post("/api/admin/editar", async (req, res) => {
 ======================= */
 app.post("/api/admin/eliminar", async (req, res) => {
 
-  const { password, id } = req.body;
+  const password = (req.body.password || "").trim();
 
-  if (password.trim() !== ADMIN_PASS)
- {
+  if (password !== ADMIN_PASS) {
     return res.status(401).json({ error: "Contraseña incorrecta" });
   }
+
+  const { id } = req.body;
 
   await Producto.findByIdAndDelete(id);
 
