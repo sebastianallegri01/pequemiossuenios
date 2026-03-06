@@ -8,10 +8,10 @@ const lista = document.getElementById("lista");
 
 let editandoId = null;
 
-
 /* =====================
    CARGAR PRODUCTOS
 ===================== */
+
 function cargar() {
 
   fetch("/api/productos")
@@ -23,6 +23,7 @@ function cargar() {
       data.forEach(p => {
 
         const card = document.createElement("div");
+
         card.className = "card";
 
         card.innerHTML = `
@@ -41,15 +42,14 @@ function cargar() {
 
       });
 
-    })
-    .catch(err => console.error("Error cargando productos:", err));
+    });
 
 }
-
 
 /* =====================
    EDITAR
 ===================== */
+
 function editar(id) {
 
   fetch("/api/productos")
@@ -57,11 +57,6 @@ function editar(id) {
     .then(data => {
 
       const p = data.find(x => x._id === id);
-
-      if (!p) {
-        alert("Producto no encontrado");
-        return;
-      }
 
       editandoId = id;
 
@@ -77,10 +72,10 @@ function editar(id) {
 
 }
 
-
 /* =====================
    AGREGAR / EDITAR
 ===================== */
+
 function agregar() {
 
   const password = pass.value.trim();
@@ -117,17 +112,17 @@ function agregar() {
     }
 
     limpiarFormulario();
+
     cargar();
 
-  })
-  .catch(err => console.error("Error:", err));
+  });
 
 }
-
 
 /* =====================
    BORRAR
 ===================== */
+
 function borrar(id) {
 
   const password = pass.value.trim();
@@ -158,15 +153,14 @@ function borrar(id) {
 
     cargar();
 
-  })
-  .catch(err => console.error("Error:", err));
+  });
 
 }
 
-
 /* =====================
-   LIMPIAR FORMULARIO
+   LIMPIAR
 ===================== */
+
 function limpiarFormulario() {
 
   editandoId = null;
@@ -178,7 +172,6 @@ function limpiarFormulario() {
   descripcion.value = "";
 
 }
-
 
 /* =====================
    INICIAR
