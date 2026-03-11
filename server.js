@@ -10,12 +10,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 /* =======================
-   CONTRASEÑA ADMIN
-======================= */
-
-const ADMIN_PASS = "pequenios123";
-
-/* =======================
    SESIONES (Carrito)
 ======================= */
 
@@ -94,18 +88,6 @@ app.get("/api/productos", async (req, res) => {
 
 app.post("/api/admin/agregar", async (req, res) => {
 
-  const password = (req.body.password || "").trim();
-
-  console.log("PASSWORD RECIBIDA:", password);
-
-  if (password !== ADMIN_PASS) {
-
-    console.log("❌ contraseña incorrecta");
-
-    return res.status(401).json({ error: "Contraseña incorrecta" });
-
-  }
-
   const { nombre, precio, categoria, imagen, descripcion } = req.body;
 
   try {
@@ -138,14 +120,6 @@ app.post("/api/admin/agregar", async (req, res) => {
 
 app.post("/api/admin/editar", async (req, res) => {
 
-  const password = (req.body.password || "").trim();
-
-  if (password !== ADMIN_PASS) {
-
-    return res.status(401).json({ error: "Contraseña incorrecta" });
-
-  }
-
   const { id, nombre, precio, categoria, imagen, descripcion } = req.body;
 
   try {
@@ -175,14 +149,6 @@ app.post("/api/admin/editar", async (req, res) => {
 ======================= */
 
 app.post("/api/admin/eliminar", async (req, res) => {
-
-  const password = (req.body.password || "").trim();
-
-  if (password !== ADMIN_PASS) {
-
-    return res.status(401).json({ error: "Contraseña incorrecta" });
-
-  }
 
   const { id } = req.body;
 
@@ -271,6 +237,5 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log("🚀 Servidor activo");
   console.log("Clientes: /");
   console.log("Admin: /admin");
-  console.log("Password admin:", ADMIN_PASS);
 
 });

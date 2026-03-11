@@ -1,4 +1,3 @@
-const pass = document.getElementById("pass");
 const nombre = document.getElementById("nombre");
 const precio = document.getElementById("precio");
 const categoria = document.getElementById("categoria");
@@ -78,13 +77,6 @@ function editar(id) {
 
 function agregar() {
 
-  const password = pass.value.trim();
-
-  if (!password) {
-    alert("Ingresá la contraseña de administrador");
-    return;
-  }
-
   const url = editandoId
     ? "/api/admin/editar"
     : "/api/admin/agregar";
@@ -95,7 +87,6 @@ function agregar() {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      password: password,
       id: editandoId,
       nombre: nombre.value,
       precio: Number(precio.value),
@@ -104,15 +95,10 @@ function agregar() {
       descripcion: descripcion.value
     })
   })
-  .then(res => {
-
-    if (!res.ok) {
-      alert("❌ Contraseña incorrecta");
-      return;
-    }
+  .then(res => res.json())
+  .then(() => {
 
     limpiarFormulario();
-
     cargar();
 
   });
@@ -125,13 +111,6 @@ function agregar() {
 
 function borrar(id) {
 
-  const password = pass.value.trim();
-
-  if (!password) {
-    alert("Ingresá la contraseña de administrador");
-    return;
-  }
-
   if (!confirm("¿Seguro que querés eliminar este producto?")) return;
 
   fetch("/api/admin/eliminar", {
@@ -140,16 +119,11 @@ function borrar(id) {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      password: password,
       id: id
     })
   })
-  .then(res => {
-
-    if (!res.ok) {
-      alert("❌ Contraseña incorrecta");
-      return;
-    }
+  .then(res => res.json())
+  .then(() => {
 
     cargar();
 
