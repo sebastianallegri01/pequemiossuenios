@@ -3,6 +3,8 @@ const precio = document.getElementById("precio");
 const categoria = document.getElementById("categoria");
 const imagen = document.getElementById("imagen");
 const descripcion = document.getElementById("descripcion");
+const stock = document.getElementById("stock");
+const imagenFile = document.getElementById("imagenFile");
 const lista = document.getElementById("lista");
 
 let editandoId = null;
@@ -27,13 +29,23 @@ function cargar() {
 
         card.innerHTML = `
           ${p.imagen ? `<img src="${p.imagen}" style="width:100%;border-radius:10px">` : ""}
+
           <div class="info">
+
             <h3>${p.nombre}</h3>
+
             <div class="precio">$${p.precio}</div>
+
+            <div><b>Stock:</b> ${p.stock}</div>
+
+            <div><b>Categoría:</b> ${p.categoria || "-"}</div>
+
             <p>${p.descripcion || ""}</p>
 
             <button onclick="editar('${p._id}')">✏️ Editar</button>
+
             <button onclick="borrar('${p._id}')">🗑 Eliminar</button>
+
           </div>
         `;
 
@@ -64,6 +76,7 @@ function editar(id) {
       categoria.value = p.categoria || "";
       imagen.value = p.imagen || "";
       descripcion.value = p.descripcion || "";
+      stock.value = p.stock || 0;
 
       window.scrollTo(0,0);
 
@@ -72,10 +85,36 @@ function editar(id) {
 }
 
 /* =====================
+   CONVERTIR IMAGEN
+===================== */
+
+function convertirImagen(file){
+
+  return new Promise(resolve => {
+
+    const reader = new FileReader();
+
+    reader.onload = e => resolve(e.target.result);
+
+    reader.readAsDataURL(file);
+
+  });
+
+}
+
+/* =====================
    AGREGAR / EDITAR
 ===================== */
 
-function agregar() {
+async function agregar() {
+
+  let imagenFinal = imagen.value;
+
+  if(imagenFile.files.length > 0){
+
+    imagenFinal = await convertirImagen(imagenFile.files[0]);
+
+  }
 
   const url = editandoId
     ? "/api/admin/editar"
@@ -91,14 +130,16 @@ function agregar() {
       nombre: nombre.value,
       precio: Number(precio.value),
       categoria: categoria.value,
-      imagen: imagen.value,
-      descripcion: descripcion.value
+      imagen: imagenFinal,
+      descripcion: descripcion.value,
+      stock: Number(stock.value)
     })
   })
   .then(res => res.json())
   .then(() => {
 
     limpiarFormulario();
+
     cargar();
 
   });
@@ -144,6 +185,8 @@ function limpiarFormulario() {
   categoria.value = "";
   imagen.value = "";
   descripcion.value = "";
+  stock.value = "";
+  imagenFile.value = "";
 
 }
 

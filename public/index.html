@@ -1,34 +1,92 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
 <meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Pequeños Sueños</title>
+
 <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
 
 <header>
+
 <h1>🧸 Pequeños Sueños</h1>
+
 <p>Ropa y accesorios para bebés y niños</p>
+
 </header>
+
 
 <main>
 
+
+<!-- =====================
+CATEGORIAS
+===================== -->
+
+<div class="filtros">
+
+<button onclick="filtrar('todos')">Todos</button>
+
+<button onclick="filtrar('bebe')">Ropa de bebé</button>
+
+<button onclick="filtrar('nino')">Ropa de niño</button>
+
+<button onclick="filtrar('accesorios')">Accesorios</button>
+
+</div>
+
+
+
+<!-- =====================
+PRODUCTOS
+===================== -->
+
 <h2>Productos</h2>
+
 <div id="productos"></div>
 
+
+
+<!-- =====================
+CARRITO
+===================== -->
+
+<div class="carrito">
+
 <h2>🛒 Carrito</h2>
+
 <ul id="carrito"></ul>
 
-<p><strong>Total:</strong> $<span id="total">0</span></p>
+<p class="total">
+<strong>Total:</strong> $<span id="total">0</span>
+</p>
 
-<button onclick="finalizarCompra()">Finalizar compra</button>
+<button class="comprar" onclick="finalizarCompra()">
+Comprar por WhatsApp
+</button>
+
+</div>
 
 </main>
 
+
+
+<!-- =====================
+FOOTER
+===================== -->
+
 <footer>
+
 <div class="footer-contenido">
+
 <p>📍 Dirección: Beltrán 5986</p>
 
 <p>
@@ -41,7 +99,9 @@
 <p>📞 Teléfono: +54 9 223 688-2481</p>
 
 </div>
+
 </footer>
+
 
 <script src="script.js"></script>
 

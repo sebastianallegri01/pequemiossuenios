@@ -43,7 +43,8 @@ const ProductoSchema = new mongoose.Schema({
   precio: Number,
   categoria: String,
   imagen: String,
-  descripcion: String
+  descripcion: String,
+  stock: { type: Number, default: 0 }   // ⭐ NUEVO
 });
 
 const Producto = mongoose.model("Producto", ProductoSchema);
@@ -88,7 +89,7 @@ app.get("/api/productos", async (req, res) => {
 
 app.post("/api/admin/agregar", async (req, res) => {
 
-  const { nombre, precio, categoria, imagen, descripcion } = req.body;
+  const { nombre, precio, categoria, imagen, descripcion, stock } = req.body;
 
   try {
 
@@ -97,7 +98,8 @@ app.post("/api/admin/agregar", async (req, res) => {
       precio,
       categoria,
       imagen,
-      descripcion
+      descripcion,
+      stock
     });
 
     console.log("✅ producto agregado");
@@ -120,7 +122,7 @@ app.post("/api/admin/agregar", async (req, res) => {
 
 app.post("/api/admin/editar", async (req, res) => {
 
-  const { id, nombre, precio, categoria, imagen, descripcion } = req.body;
+  const { id, nombre, precio, categoria, imagen, descripcion, stock } = req.body;
 
   try {
 
@@ -129,7 +131,8 @@ app.post("/api/admin/editar", async (req, res) => {
       precio,
       categoria,
       imagen,
-      descripcion
+      descripcion,
+      stock
     });
 
     res.json({ ok: true });
@@ -180,6 +183,7 @@ app.get("/api/carrito", (req, res) => {
 
 });
 
+
 app.post("/api/carrito/agregar", async (req, res) => {
 
   const { productoId, cantidad } = req.body;
@@ -188,6 +192,10 @@ app.post("/api/carrito/agregar", async (req, res) => {
 
   if (!producto) {
     return res.status(404).json({ error: "Producto no encontrado" });
+  }
+
+  if (producto.stock <= 0) {
+    return res.status(400).json({ error: "Sin stock" });
   }
 
   if (!req.session.carrito) req.session.carrito = [];
@@ -213,6 +221,7 @@ app.post("/api/carrito/agregar", async (req, res) => {
 
 });
 
+
 app.post("/api/carrito/eliminar", (req, res) => {
 
   const { productoId } = req.body;
@@ -223,6 +232,51 @@ app.post("/api/carrito/eliminar", (req, res) => {
     req.session.carrito.filter(p => p._id !== productoId);
 
   res.json({ ok: true });
+
+});
+
+
+/* =======================
+   FINALIZAR COMPRA
+======================= */
+
+app.post("/api/compra/finalizar", async (req, res) => {
+
+  if (!req.session.carrito || req.session.carrito.length === 0) {
+    return res.status(400).json({ error: "Carrito vacío" });
+  }
+
+  try {
+
+    for (const item of req.session.carrito) {
+
+      const producto = await Producto.findById(item._id);
+
+      if (!producto) continue;
+
+      if (producto.stock < item.cantidad) {
+        return res.status(400).json({
+          error: `No hay suficiente stock de ${producto.nombre}`
+        });
+      }
+
+      producto.stock -= item.cantidad;
+
+      await producto.save();
+
+    }
+
+    req.session.carrito = [];
+
+    res.json({ ok: true });
+
+  } catch (err) {
+
+    console.log("❌ error finalizando compra", err);
+
+    res.status(500).json({ error: "error finalizando compra" });
+
+  }
 
 });
 

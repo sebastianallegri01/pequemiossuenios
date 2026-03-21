@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Admin | Pequeños Sueños</title>
 <link rel="stylesheet" href="admin.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
@@ -18,13 +19,23 @@
 
 <input id="precio" type="number" placeholder="Precio">
 
-<input id="categoria" placeholder="Categoría">
+<select id="categoria">
+<option value="">Seleccionar categoría</option>
+<option value="bebe">Ropa de bebé</option>
+<option value="nino">Ropa de niño</option>
+<option value="accesorios">Accesorios</option>
+</select>
 
-<input id="imagen" placeholder="URL de imagen">
+<input id="stock" type="number" placeholder="Stock disponible">
+
+<input id="imagen" placeholder="URL de imagen (opcional)">
+
+<label>O subir imagen desde el celular</label>
+<input id="imagenFile" type="file" accept="image/*">
 
 <textarea id="descripcion" placeholder="Descripción del producto"></textarea>
 
-<button onclick="agregar()">➕ Agregar producto</button>
+<button onclick="agregar()">➕ Guardar producto</button>
 
 </div>
 
